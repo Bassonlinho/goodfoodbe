@@ -1,0 +1,17 @@
+{
+    "dbConfig": {
+        "client": "pg",
+        "connection": {
+            "host": "localhost",
+            "user": "postgres",
+            "password": "1243!",
+            "charset": "utf8",
+            "database": "goodfood",
+            "port": 5432
+        }
+    },
+    "bcryptjs": {
+        "difficulty": 8
+    },
+    "jwt_secret": "secretissecet"
+}
