@@ -36,7 +36,7 @@ module.exports = function (router) {
 
     //     res.status(200).json('caoo');
     // });
-    router.post('/socials', function (req, res, next) {
+    router.post('/socials', function (req, res) {
         // console.log('loginnnn', req.body);
         var profileFB = req.body.fb_profile;
         var profileG = req.body.gmail_profile;
@@ -88,50 +88,7 @@ module.exports = function (router) {
 
                         })
                 }
-
             });
-
-
-
-
-
-
-        Korisnik.findOne(condition)
-            .populate('id_korisnik_grupa')
-            .populate('id_valuta')
-            .exec(function (err, korisnik) {
-                if (err) {
-                    sails.log.error("AuthController::loginWithSocials - korisnik findOne err " + JSON.stringify(err));
-                    return res.badRequest({
-                        message: 'INTERNAL_SERVER_ERROR'
-                    });
-                }
-                if (!korisnik) {
-                    var cond = {}
-                    if (profileFB) {
-                        cond = { username: profileFB.email, aktivan: true }
-                    } else if (profileG) {
-                        cond = { username: profileG.email, aktivan: true }
-                    }
-                    Korisnik.findOne(cond)
-                        .populate('id_korisnik_grupa')
-                        .populate('id_valuta')
-                        .exec(function (err, korisnik2) {
-                            if (!korisnik2) {
-                                return res.badRequest({
-                                    message: 'invalid username or password'
-                                });
-                            }
-                            ProfileService
-                                .updateKorisnikSocial(korisnik2, profileFB, profileG)
-                                .then((data) => {
-                                    return getClient(req, res, korisnik2);
-                                })
-                        });
-                } else {
-                    return getClient(req, res, korisnik)
-                }
-            })
     });
 
 };
