@@ -76,19 +76,28 @@ module.exports = function (router) {
                             }
                             user2.save(condition)
                                 .then(function (user) {
-                                    const token = jwt.sign(user, jwt_secret, { expiresIn: "7d" });
+                                    const token = jwt.sign(user.toJSON(), jwt_secret, { expiresIn: "7d" });
                                     res.status(200).json({
-                                        user,
+                                        user: user.toJSON(),
                                         token,
                                         success: true,
                                         message: "User is created."
                                     });
                                 })
+                                .catch((err) => {
+                                    res.status(500).json({
+                                        success: false,
+                                        message: err
+                                    });
+                                })
                         })
                 } else {
-                    res.status(500).json({
-                        success: false,
-                        message: 'No user found'
+                    const token = jwt.sign(user1.toJSON(), jwt_secret, { expiresIn: "7d" });
+                    res.status(200).json({
+                        user: user1.toJSON(),
+                        token,
+                        success: true,
+                        message: "User is created."
                     });
                 }
             });
