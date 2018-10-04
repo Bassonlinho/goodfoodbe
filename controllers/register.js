@@ -14,21 +14,21 @@ module.exports = function (router) {
         var profileG = req.body.gmail_profile;
         var socID = {};
         if (!!profileFB) {
-          socID = { fb_id: profileFB.id }
+            socID = { fb_id: profileFB.id }
         } else if (!!profileG) {
-          socID = { google_id: profileG.id }
+            socID = { google_id: profileG.id }
         }
-        var noviKorisnik={
-            name:req.body.name,
-            surname:req.body.surname,
-            password:req.body.password,
-            username:req.body.username,
+        var noviKorisnik = {
+            name: req.body.firstName,
+            surname: req.body.lastName,
+            password: req.body.password,
+            username: req.body.username,
             ...socID
         };
         User.forge()
             .save(noviKorisnik)
             .then(function (user) {
-                const token = jwt.sign(user, jwt_secret, { expiresIn: "7d" });
+                const token = jwt.sign(user.toJSON(), jwt_secret, { expiresIn: "7d" });
                 res.status(200).json({
                     user,
                     token,
