@@ -74,8 +74,7 @@ module.exports = function (router) {
                                     message: 'No user found'
                                 });
                             }
-                            User.forge(cond)
-                                .save(condition)
+                            user2.save(condition)
                                 .then(function (user) {
                                     const token = jwt.sign(user, jwt_secret, { expiresIn: "7d" });
                                     res.status(200).json({
@@ -85,8 +84,12 @@ module.exports = function (router) {
                                         message: "User is created."
                                     });
                                 })
-
                         })
+                } else {
+                    res.status(500).json({
+                        success: false,
+                        message: 'No user found'
+                    });
                 }
             });
     });
