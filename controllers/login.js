@@ -53,43 +53,43 @@ module.exports = function (router) {
         } else if (profileG) {
             condition = { google_id: profileG.id }
         }
-
-        User.forge()
-            .fetch(condition)
+        User.forge(condition)
+            .fetch()
             .then((user1) => {
-                if (!user1) {
+                if (!user1 || user1 === null) {
                     var cond = {}
                     if (profileFB) {
-                        cond = { username: profileFB.email, aktivan: true }
+                        cond = { username: profileFB.email }
                     } else if (profileG) {
-                        cond = { username: profileG.email, aktivan: true }
+                        cond = { username: profileG.email }
                     }
 
-                    User.forge()
-                        .fetch(cond)
+                    User.forge(cond)
+                        .fetch()
                         .then((user2) => {
-                            if (!user2) {
+                            if (!user2 || user2 === null) {
                                 res.status(500).json({
                                     success: false,
                                     message: 'No user found'
                                 });
+                            } else {
+                                user2.save(condition)
+                                    .then(function (user) {
+                                        const token = jwt.sign(user.toJSON(), jwt_secret, { expiresIn: "7d" });
+                                        res.status(200).json({
+                                            user: user.toJSON(),
+                                            token,
+                                            success: true,
+                                            message: "User is created."
+                                        });
+                                    })
+                                    .catch((err) => {
+                                        res.status(500).json({
+                                            success: false,
+                                            message: err
+                                        });
+                                    })
                             }
-                            user2.save(condition)
-                                .then(function (user) {
-                                    const token = jwt.sign(user.toJSON(), jwt_secret, { expiresIn: "7d" });
-                                    res.status(200).json({
-                                        user: user.toJSON(),
-                                        token,
-                                        success: true,
-                                        message: "User is created."
-                                    });
-                                })
-                                .catch((err) => {
-                                    res.status(500).json({
-                                        success: false,
-                                        message: err
-                                    });
-                                })
                         })
                 } else {
                     const token = jwt.sign(user1.toJSON(), jwt_secret, { expiresIn: "7d" });

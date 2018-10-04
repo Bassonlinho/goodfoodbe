@@ -10,14 +10,17 @@ var User = require('../models/user');
 module.exports = function (router) {
 
     router.post('/', function (req, res) {
+        // console.log('ppppppppppp', req.body);
         var profileFB = req.body.fb_profile;
         var profileG = req.body.gmail_profile;
         var socID = {};
-        if (!!profileFB) {
+        if (!!profileFB.id) {
             socID = { fb_id: profileFB.id }
-        } else if (!!profileG) {
+        } else if (!!profileG.id) {
             socID = { google_id: profileG.id }
         }
+
+        console.log('d',socID);
         var noviKorisnik = {
             name: req.body.firstName,
             surname: req.body.lastName,
