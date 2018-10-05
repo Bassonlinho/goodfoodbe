@@ -9,10 +9,9 @@ var Items = require('../../collections/items');
 module.exports = function (router) {
 
     router.get('/read', function (req, res) {
-        console.log('sssssssssssssssssss', req.user);
-        var queryBuilder = knex.select('t1.id', 't1.name', 't1.description', 't1.id_user', 't1.id_currency')
+        var queryBuilder = knex.select('t1.id', 't1.name', 't1.description', 't1.id_user', 't1.id_currency','t1.price')
             .from('Item as t1')
-            .whereNot('t1.id_user', req.user.id)
+            .where('t1.id_user', req.user.id)
         queryBuilder
             .then(function (result) {
                 res.status(200).json(result);
