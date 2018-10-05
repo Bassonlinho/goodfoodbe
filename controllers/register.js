@@ -14,13 +14,13 @@ module.exports = function (router) {
         var profileFB = req.body.fb_profile;
         var profileG = req.body.gmail_profile;
         var socID = {};
-        if (!!profileFB.id) {
+        if (!!profileFB && profileFB.id) {
             socID = { fb_id: profileFB.id }
-        } else if (!!profileG.id) {
+        } else if (!!profileG && profileG.id) {
             socID = { google_id: profileG.id }
         }
 
-        console.log('d',socID);
+        console.log('d', socID);
         var noviKorisnik = {
             name: req.body.firstName,
             surname: req.body.lastName,
