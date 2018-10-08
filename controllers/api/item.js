@@ -24,20 +24,17 @@ module.exports = function (router) {
                 });
             });
     });
-
+    
     router.post('/create', function (req, res) {
         var data = req.body;
 
         for (var key in data) {
             if (data[key] === '') data[key] = null;
         }
-        console.log('aaaaaaaaaaaaaaaaaaaa', req.user.id);
-
         if (!data.id) {
             Item.forge()
                 .save(Object.assign(data, {id_user:req.user.id}))
                 .then(function (newItem) {
-                    console.log('aaaaaaaaaaaaaaaaaaaa', newItem);
                     res.status(200).json({
                         data: newItem,
                         success: true,
@@ -69,4 +66,21 @@ module.exports = function (router) {
         }
     });
 
+/**************CURRENCY*****************/
+    router.get('/read_currency', function (req, res) {
+        var queryBuilder = knex.select('t1.id', 't1.name')
+            .from('Currency as t1')
+        queryBuilder
+            .then(function (result) {
+                res.status(200).json(result);
+            })
+            .catch(function (err) {
+                console.log(err);
+                res.status(500).json({
+                    success: false,
+                    message: err.message
+                });
+            });
+    });
+/*******************************************/
 };
