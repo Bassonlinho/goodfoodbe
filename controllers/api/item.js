@@ -2,6 +2,7 @@
 var database = require('../../lib/db');
 var bookshelf = database.bookshelf;
 var knex = bookshelf.knex;
+const st = require('knex-postgis')(knex);
 var Item = require('../../models/item');
 var Items = require('../../collections/items');
 
@@ -14,11 +15,12 @@ module.exports = function (router) {
 
     router.get('/read', function (req, res) {
         var responseData = {};
-        var condition = ' id_user = ' + req.user.id;
-        Items.forge()
-            .fetch({ condition })
+
+        knex('Item')
+            .select('*', st.asText('location'))
+            .where('id_user', req.user.id)
             .then(function (result) {
-                return Promise.all(result.toJSON().map((record) => {
+                return Promise.all(result.map((record) => {
                     if (record.picture) {
                         return BluemixCOS.doGetSignedURL(record.picture)
                             .then(function (doc) {
@@ -31,7 +33,6 @@ module.exports = function (router) {
                 }))
             })
             .then((data) => {
-                console.log('rrrrrrrrrrrrrrrrr', data);
                 responseData.data = data;
                 responseData.message = 'Item su uspešno učitani';
                 responseData.success = true;
