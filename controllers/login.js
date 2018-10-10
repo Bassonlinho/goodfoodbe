@@ -93,6 +93,7 @@ module.exports = function (router) {
                         })
                 } else {
                     const token = jwt.sign(user1.toJSON(), jwt_secret, { expiresIn: "7d" });
+                    console.log('-------- Dobio token!!!! --------', token);
                     res.status(200).json({
                         user: user1.toJSON(),
                         token,

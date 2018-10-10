@@ -13,10 +13,29 @@ var BluemixCOS = require('../../lib/BluemixCOS');
 module.exports = function (router) {
 
     router.get('/read', function (req, res) {
-        const query = 'SELECT u.name,t1.id, t1.name, t1.description, t1.id_user, t1.id_currency, t1.price, st_astext(t1.location) as location from "Item" as t1 LEFT JOIN "User" u ON t1.id_user = u.id WHERE t1.id_user=' + req.user.id
-        knex.raw(query)
+        var responseData = {};
+        var condition = ' id_user = ' + req.user.id;
+        Items.forge()
+            .fetch({ condition })
             .then(function (result) {
-                res.status(200).json(result.rows);
+                return Promise.all(result.toJSON().map((record) => {
+                    if (record.picture) {
+                        return BluemixCOS.doGetSignedURL(record.picture)
+                            .then(function (doc) {
+                                record.signedURL = doc;
+                                return record;
+                            });
+                    } else {
+                        return record;
+                    }
+                }))
+            })
+            .then((data) => {
+                console.log('rrrrrrrrrrrrrrrrr', data);
+                responseData.data = data;
+                responseData.message = 'Item su uspešno učitani';
+                responseData.success = true;
+                res.status(200).json(responseData);
             })
             .catch(function (err) {
                 console.log(err);
@@ -30,16 +49,30 @@ module.exports = function (router) {
     router.get('/getById', function (req, res) {
         const id = req.query.id;
 
-        const query = 'SELECT u.name,u.surname,u.username,t1.id, t1.name, t1.description, t1.id_user, t1.id_currency, t1.price, st_astext(t1.location) as location ' +
-            'from "Item" as t1 ' +
-            'LEFT JOIN "User" u ' +
-            'ON t1.id_user = u.id ' +
-            ' WHERE t1.id = ' + id
+        // const query = 'SELECT u.name,u.surname,u.username,t1.id, t1.name, t1.description, t1.id_user, t1.id_currency, t1.price, st_astext(t1.location) as location ' +
+        //     'from "Item" as t1 ' +
+        //     'LEFT JOIN "User" u ' +
+        //     'ON t1.id_user = u.id ' +
+        //     ' WHERE t1.id = ' + id
 
-        knex.raw(query)
+        // knex.raw(query)
+        var condition = { id: id }
+        Item.forge(condition)
+            .fetch()
             .then(function (result) {
-                res.status(200).json(result.rows[0]);
-                console.log('aaaaaaaaaaaaaaaaaaaaaaaa', result.rows);
+                let res = result.toJSON()
+                if (res.picture) {
+                    return BluemixCOS.doGetSignedURL(res.picture)
+                        .then(function (doc) {
+                            res.signedURL = doc;
+                            return res;
+                        });
+                } else {
+                    return res;
+                }
+            })
+            .then((data) => {
+                res.status(200).json(data);
             })
             .catch(function (err) {
                 console.log(JSON.stringify(err));
@@ -145,7 +178,7 @@ module.exports = function (router) {
                         });
                     })
                     .catch((err) => {
-                        console.log('errrrrrrrr',err);
+                        console.log('errrrrrrrr', err);
                         res.status(500).json({
                             success: false,
                             message: err.message

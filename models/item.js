@@ -1,6 +1,7 @@
 'use strict';
 
 var bookshelf = require('../lib/db').bookshelf;
+const st = require('knex-postgis')(bookshelf.knex);
 
 require('./user');
 require('./currency');
@@ -20,7 +21,16 @@ var Item = bookshelf.Model.extend({
     },
     currency: function () {
         return this.belongsTo('Currency', 'id_currency');
-    }
+    },
+
+    initialize: function() {
+        this.on('fetching', function(model, columns, options) {
+          if(columns[0] === `${this.tableName}.*` || columns.indexOf('location') >= 0) {
+            columns.push(st.asText('location'));
+          }
+        });
+        return bookshelf.Model.prototype.initialize.apply(this, arguments);
+      }
 });
 
 
