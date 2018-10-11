@@ -15,10 +15,9 @@ module.exports = function (router) {
 
     router.get('/read', function (req, res) {
         var responseData = {};
-
         knex('Item')
             .select('*', st.asText('location'))
-            .where('id_user', req.user.id)
+            .whereNot('id_user', req.user.id)
             .then(function (result) {
                 return Promise.all(result.map((record) => {
                     if (record.picture) {
@@ -49,19 +48,29 @@ module.exports = function (router) {
 
     router.get('/getById', function (req, res) {
         const id = req.query.id;
-
-        // const query = 'SELECT u.name,u.surname,u.username,t1.id, t1.name, t1.description, t1.id_user, t1.id_currency, t1.price, st_astext(t1.location) as location ' +
-        //     'from "Item" as t1 ' +
-        //     'LEFT JOIN "User" u ' +
-        //     'ON t1.id_user = u.id ' +
-        //     ' WHERE t1.id = ' + id
-
-        // knex.raw(query)
         var condition = { id: id }
+
         Item.forge(condition)
-            .fetch()
+            .fetch({
+                withRelated: [{
+                    'user': function (qb) {
+                        qb.column('id', 'name', 'surname', 'username', 'phone', 'address');
+                    },
+                    'itemRating': function (qb) { },
+                    'itemRating.user': function (qb) {
+                        qb.column('id', 'name', 'surname');
+                    }
+                }]
+            })
             .then(function (result) {
                 let res = result.toJSON()
+                let rating = res.itemRating.reduce((acc, item, i) => {
+                    if (item.rating) {
+                        acc += parseInt(item.rating)
+                    }
+                    return acc;
+                }, 0) / res.itemRating.length;
+                res.rating = rating;
                 if (res.picture) {
                     return BluemixCOS.doGetSignedURL(res.picture)
                         .then(function (doc) {
@@ -147,7 +156,7 @@ module.exports = function (router) {
         let filename, extension, bluemixObjectStorageFilename;
         const parts = req.file.originalname.split('.');
         var itemId = typeof req.body.itemId === 'object' ? req.body.itemId[0] : req.body.itemId;
-        console.log('wwwwwww ', req.file, req.body, itemId);
+        // console.log('wwwwwww ', req.file, req.body, itemId);
         filename = parts[0];
         if (parts.length > 1) {
             extension = parts[1];

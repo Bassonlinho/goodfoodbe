@@ -9,7 +9,7 @@ var ItemRating = bookshelf.Model.extend({
     tableName: 'Item_rating',
 
     user: function(){
-        return this.belongsTo('User','id_user');
+        return this.belongsTo('User','id_user_rated');
     },
     item: function(){
         return this.belongsTo('Item','id_item');
