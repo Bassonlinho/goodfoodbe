@@ -46,6 +46,39 @@ module.exports = function (router) {
             });
     });
 
+    router.get('/myItems', function (req, res) {
+        var responseData = {};
+        knex('Item')
+            .select('*', st.asText('location'))
+            .where('id_user', req.user.id)
+            .then(function (result) {
+                return Promise.all(result.map((record) => {
+                    if (record.picture) {
+                        return BluemixCOS.doGetSignedURL(record.picture)
+                            .then(function (doc) {
+                                record.signedURL = doc;
+                                return record;
+                            });
+                    } else {
+                        return record;
+                    }
+                }))
+            })
+            .then((data) => {
+                responseData.data = data;
+                responseData.message = 'Item su uspešno učitani';
+                responseData.success = true;
+                res.status(200).json(responseData);
+            })
+            .catch(function (err) {
+                console.log(err);
+                res.status(500).json({
+                    success: false,
+                    message: err.message
+                });
+            });
+    });
+
     router.get('/getById', function (req, res) {
         const id = req.query.id;
         var condition = { id: id }
